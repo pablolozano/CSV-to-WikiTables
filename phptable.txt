@@ -1,0 +1,63 @@
+<?php
+   $fName = "expTbl.csv";
+   
+   function parse_csv ($csv_string, $delimiter = ",", $skip_empty_lines = false, $trim_fields = false)
+{
+    $enc = preg_replace('/(?<!")""/', '!!Q!!', $csv_string);
+    $enc = preg_replace_callback(
+        '/"(.*?)"/s',
+        function ($field) {
+            return urlencode(utf8_encode($field[1]));
+        },
+        $enc
+    );
+    $lines = preg_split($skip_empty_lines ? ($trim_fields ? '/( *\R)+/s' : '/\R+/s') : '/\R/s', $enc);
+    return array_map(
+        function ($line) use ($delimiter, $trim_fields) {
+            $fields = $trim_fields ? array_map('trim', explode($delimiter, $line)) : explode($delimiter, $line);
+            return array_map(
+                function ($field) {
+                    return str_replace('!!Q!!', '"', utf8_decode(urldecode($field)));
+                },
+                $fields
+            );
+        },
+        $lines
+    );
+}
+
+   $myFile = fopen($fName, "r") or die("Unable to open file!");
+   $preLine = fread($myFile,filesize($fName));
+   $adjusterArr = parse_csv($preLine);
+   $finalStr = '{| class="wikitable"';
+   For ($i = 0; $i < sizeof($adjusterArr); $i++){
+      $name = $adjusterArr[$i][0];
+      $title = $adjusterArr[$i][1];
+      $phone = $adjusterArr[$i][2];
+      $finalStr += "\n |- \n " + $name + " || " + $title + " || " + $phone + " || " + $email;
+   }
+   $finalStr += '|}';
+   echo $finalStr;
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
